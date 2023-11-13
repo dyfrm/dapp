@@ -1,0 +1,63 @@
+{
+  "name": "dframe",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "deploy:contract": "bash ./src/contract/deploy.sh",
+    "compile:contract": "ligo compile contract src/contract/frame_list.jsligo -o src/contract/michealson/tez_frame.tz",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@airgap/beacon-sdk": "^4.0.9",
+    "@taquito/beacon-wallet": "^17.2.0",
+    "@taquito/taquito": "^17.2.0",
+    "bignumber.js": "^9.0.2",
+    "buffer": "^6.0.3",
+    "core-js": "^3.8.3",
+    "path-browserify": "^1.0.1",
+    "stream-browserify": "^3.0.0",
+    "vue": "^3.2.13",
+    "vuetify": "^3.3.11",
+    "vuex": "^4.0.0",
+    "@mdi/font": "7.0.96",
+    "roboto-fontface": "*",
+    "vue-router": "^4.0.0",
+    "webfontloader": "^1.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.16",
+    "@babel/eslint-parser": "^7.12.16",
+    "@vue/cli-plugin-babel": "~5.0.0",
+    "@vue/cli-plugin-eslint": "~5.0.0",
+    "@vue/cli-plugin-vuex": "~5.0.0",
+    "@vue/cli-service": "~5.0.0",
+    "eslint": "^7.32.0",
+    "eslint-plugin-vue": "^8.0.3",
+    "node-sass": "^7.0.1",
+    "sass-loader": "^12.6.0",
+    "vue-router": "^4.2.4",
+    "sass": "^1.60.0"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended"
+    ],
+    "parserOptions": {
+      "parser": "@babel/eslint-parser"
+    },
+    "rules": {}
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}

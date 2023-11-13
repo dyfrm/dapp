@@ -1,0 +1,135 @@
+type frame_record = {
+    id: nat,
+    owner: address,
+    frame: string,
+    time: timestamp
+};
+
+type key_ = {
+    id: nat,
+    owner: address
+};
+
+type frames = map<key_, frame_record>;
+type users = map<address, set<nat>>
+type storage = {
+    next_frame_id : nat,
+    frames : frames,
+    users : users,
+}; 
+
+type update_params = {
+  id: nat,
+  frame: string,
+};
+
+const init_storage: storage = {
+    next_frame_id: (1 as nat),
+    frames: Map.empty,
+    users: Map.empty,
+}
+
+const verifyFrameId = ([id, store]: [nat, storage]): bool => {
+    return Map.mem({id: id, owner: Tezos.get_sender()}, store.frames);
+}
+
+const verifyStringLength = (str_: string): bool => {
+  return String.length(str_) <= (800 as nat);
+}
+
+const addFrame = ([store, frame] : [storage, string]) : storage => {
+    
+    const frame_id: nat = store.next_frame_id;
+
+    const frame_key: key_ = {
+        id: frame_id,
+        owner: Tezos.get_sender()
+    };
+
+    assert_with_error(verifyStringLength(frame), "Error: Frame length can not be greater than 800 characters.");
+
+    //verify if the id already exist
+    assert_with_error(!verifyFrameId([frame_id, store]), "Error: Frame id already exists.");
+
+    const new_frame: frame_record = {
+        id: frame_id,
+        owner: Tezos.get_sender(),
+        frame: frame,
+        time: Tezos.get_now()
+    };
+ 
+    const new_frames: frames = Map.add(frame_key, new_frame, store.frames);
+
+    const updated_users: users = match(Map.find_opt (Tezos.get_sender(), store.users), {
+        Some: (user_set: set<nat>) => {
+            const updated_user_set: set<nat> = Set.add(frame_id, user_set)
+            return Map.update(Tezos.get_sender(), Some(updated_user_set), store.users)
+        },
+        None: () => Map.add(Tezos.get_sender(), Set.literal(list([frame_id])), store.users)
+    });
+  
+    const updated_store: storage = {
+        next_frame_id: frame_id + (1 as nat),
+        frames: new_frames,
+        users: updated_users
+    };
+ 
+    return updated_store;
+}
+
+const updateFrame = ([store, update_params] : [storage, update_params]) : storage => {
+    const frame_id: nat = update_params.id;
+    const new_frame_string: string = update_params.frame;
+
+    const search_key: key_ = {
+        id: frame_id,
+        owner: Tezos.get_sender()
+    };
+
+    assert_with_error(verifyStringLength(new_frame_string), "Error: Frame length can not be greater than 800 characters.");
+
+    assert_with_error(verifyFrameId([frame_id, store]), "Error: Frame id does not exist.");
+
+    const existing_frame: frame_record = match(Map.find_opt (search_key, store.frames), {
+    Some: (frame: frame_record) => frame,
+    None: () => (failwith("Error: Something went wrong.") as frame_record)
+    });
+
+    const new_frames: frames = Map.update(search_key, Some(({...existing_frame, frame: new_frame_string})), store.frames);
+ 
+    const updated_store: storage = {
+        next_frame_id: store.next_frame_id,
+        frames: new_frames,
+        users: store.users
+    };
+
+    return updated_store;
+}
+
+const deleteFrame = ([store, frame_id] : [storage, nat]) : storage => {
+    
+    assert_with_error(verifyFrameId([frame_id, store]), "Error: Frame id does not exist.");
+
+    const search_key: key_ = {
+        id: frame_id,
+        owner: Tezos.get_sender()
+    }
+
+    const new_frames: frames = Map.remove(search_key, store.frames);
+
+    const updated_users: users = match(Map.find_opt (Tezos.get_sender(), store.users), {
+        Some: (user_set: set<nat>) => {
+            const updated_user_set: set<nat> = Set.remove(frame_id, user_set)
+            return Map.update(Tezos.get_sender(), Some(updated_user_set), store.users)
+        },
+        None: () => (failwith("Error: Something went wrong.") as users)
+    });
+
+    const updated_store: storage = {
+        next_frame_id: store.next_frame_id,
+        frames: new_frames,
+        users: updated_users
+    };
+
+    return updated_store;
+};

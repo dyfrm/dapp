@@ -1,0 +1,16 @@
+#include "frame_actions.jsligo"
+
+type parameter = ["AddFrame", string] | ["UpdateFrame", update_params ]| ["DeleteFrame", nat] 
+
+type return_ = [list <operation>, storage];
+
+const main = ([action, store]: [parameter, storage]): return_ => {
+ return [
+   (list([]) as list <operation>),
+   (match (action, {
+    AddFrame: (frame: string) => addFrame ([store, frame]),
+    UpdateFrame: (upate_params: update_params) => updateFrame ([store, upate_params]),
+    DeleteFrame: (frame_id: nat) => deleteFrame ([store, frame_id]),
+   }))
+  ]
+}
